@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#5c6bc0" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Ses Harf Oyunu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="menu" class="katman">
+    <h1>Ses Harf Oyunu</h1>
+    <p class="aciklama">Önce öğrenmek istediğin harfleri seç, sonra sesi doğru harfle eşleştir.</p>
+    <button type="button" id="btnMenuDevam" class="btn btn-buyuk">Harf Seç ve Oyna</button>
+  </div>
+
+  <div id="kurulum" class="katman gizli kurulum-katman">
+    <header class="kurulum-baslik">
+      <button type="button" id="btnGeri" class="btn-ikon" aria-label="Geri">←</button>
+      <h2>Oyun Ayarları</h2>
+    </header>
+
+    <section class="kurulum-bolum">
+      <h3>Harf boyutu</h3>
+      <div class="boyut-secim" role="radiogroup" aria-label="Harf boyutu">
+        <label class="boyut-etiket">
+          <input type="radio" name="harfBoyutu" value="buyuk" checked />
+          <span>Büyük</span>
+        </label>
+        <label class="boyut-etiket">
+          <input type="radio" name="harfBoyutu" value="kucuk" />
+          <span>Küçük</span>
+        </label>
+        <label class="boyut-etiket">
+          <input type="radio" name="harfBoyutu" value="karisik" />
+          <span>Karışık</span>
+        </label>
+      </div>
+    </section>
+
+    <section class="kurulum-bolum kurulum-harfler">
+      <div class="kurulum-ust-satir">
+        <h3>Öğrenilecek harfler</h3>
+        <span id="seciliSayac" class="secili-sayac">2 harf</span>
+      </div>
+      <p class="kurulum-ipucu">Henüz bilmediğin harfleri seçme — az harfle başla, sonra ekle.</p>
+      <div class="hizli-secim">
+        <button type="button" id="btnBaslangic" class="btn-chip">Başlangıç (5)</button>
+        <button type="button" id="btnTumunu" class="btn-chip">Tümü</button>
+        <button type="button" id="btnTemizle" class="btn-chip">Temizle</button>
+      </div>
+      <div id="harfIzgarasi" class="harf-izgara" role="group" aria-label="Harf seçimi"></div>
+      <p id="kurulumUyari" class="kurulum-uyari gizli">Oyuna başlamak için en az 2 harf seç.</p>
+    </section>
+
+    <footer class="kurulum-alt">
+      <button type="button" id="btnOyunaBasla" class="btn btn-buyuk" disabled>Oyuna Başla</button>
+    </footer>
+  </div>
+
+  <div id="oyun" class="katman gizli">
+    <header class="ust-bar">
+      <span class="etiket">Skor</span>
+      <span id="skor" class="skor-deger">0</span>
+      <button type="button" id="btnDinle" class="btn btn-kucuk" title="Sesi tekrar dinle">🔊 Tekrar</button>
+    </header>
+
+    <div id="hedefSesAlani" class="hedef-alan" aria-live="polite">
+      <span class="kulak">👂</span>
+      <span>Dinle…</span>
+    </div>
+
+    <div class="serit serit-sol">
+      <div id="harfSol" class="harf" role="button" tabindex="0">A</div>
+    </div>
+    <div class="serit serit-sag">
+      <div id="harfSag" class="harf" role="button" tabindex="0">B</div>
+    </div>
+
+    <footer id="sesDugmeleri" class="ses-panel">
+      <button type="button" id="sesSol" class="btn-ses sol">
+        <span class="ikon">🔉</span>
+        <span>Sol ses</span>
+      </button>
+      <button type="button" id="sesSag" class="btn-ses sag">
+        <span class="ikon">🔉</span>
+        <span>Sağ ses</span>
+      </button>
+    </footer>
+  </div>
+
+  <div id="gameOver" class="katman gizli">
+    <h2>Oyun Bitti</h2>
+    <p id="gameOverMesaj">Yanlış ses!</p>
+    <p class="skor-sonuc">Skorun: <strong id="finalSkor">0</strong></p>
+    <button type="button" id="btnTekrar" class="btn btn-buyuk">Aynı Ayarlarla Tekrar</button>
+    <button type="button" id="btnAyarlar" class="btn btn-ikincil">Harfleri Değiştir</button>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/ses.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

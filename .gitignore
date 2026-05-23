@@ -1,0 +1,14 @@
+# İşletim sistemi
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Düzenleyici
+.vscode/
+.idea/
+*.swp
+*~
+
+# Günlük / geçici
+*.log
+.cache/
