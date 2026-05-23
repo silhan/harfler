@@ -1,5 +1,6 @@
 /**
  * Harf seslerini çalar. Önce mp3 dener, yoksa Web Speech API kullanır.
+ * cal() ses bitene kadar bekler.
  */
 class SesYoneticisi {
   constructor(ayarlar) {
@@ -49,24 +50,34 @@ class SesYoneticisi {
     if (kayit.tip === 'dosya') {
       const a = kayit.ses.cloneNode();
       a.currentTime = 0;
-      try {
-        await a.play();
-      } catch {
-        this.ttsCal(harf);
-      }
-      return;
+      return new Promise((resolve) => {
+        const bitir = () => resolve();
+        a.addEventListener('ended', bitir, { once: true });
+        a.addEventListener('error', () => {
+          this.ttsCal(harf).then(resolve);
+        }, { once: true });
+        a.play().catch(() => this.ttsCal(harf).then(resolve));
+      });
     }
 
-    this.ttsCal(harf);
+    return this.ttsCal(harf);
   }
 
   ttsCal(harf) {
-    if (!this.speech) return;
-    this.speech.cancel();
-    const utter = new SpeechSynthesisUtterance(harf);
-    utter.lang = 'tr-TR';
-    utter.rate = 0.85;
-    this.speech.speak(utter);
+    return new Promise((resolve) => {
+      if (!this.speech) {
+        resolve();
+        return;
+      }
+      this.speech.cancel();
+      const utter = new SpeechSynthesisUtterance(harf);
+      utter.lang = 'tr-TR';
+      utter.rate = 0.85;
+      utter.onend = resolve;
+      utter.onerror = resolve;
+      this.speech.speak(utter);
+      setTimeout(resolve, 2500);
+    });
   }
 
   durdur() {

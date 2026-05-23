@@ -406,52 +406,8 @@ body {
   filter: brightness(1.1);
 }
 
-.ses-panel {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-  padding: 1rem;
-  padding-bottom: max(1rem, env(safe-area-inset-bottom));
-  z-index: 50;
-  pointer-events: auto;
-}
-
-.btn-ses {
-  font-family: inherit;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
-  min-height: 88px;
-  border: none;
-  border-radius: 20px;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #fff;
-  cursor: pointer;
-  box-shadow: var(--golge);
-  transition: transform 0.1s ease;
-}
-
-.btn-ses:active {
-  transform: scale(0.97);
-}
-
-.btn-ses.sol {
-  background: linear-gradient(160deg, #ff8a65, var(--renk-sol));
-}
-
-.btn-ses.sag {
-  background: linear-gradient(160deg, #64b5f6, var(--renk-sag));
-}
-
-.btn-ses .ikon {
-  font-size: 2rem;
+#oyun.beklemede .harf {
+  opacity: 0.85;
 }
 
 #oyun.dogru-flash {

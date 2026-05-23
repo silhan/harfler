@@ -9,6 +9,7 @@ class SesHarfOyunu {
     this.skor = 0;
     this.animasyonId = null;
     this.sonZaman = 0;
+    this.turToken = 0;
 
     this.seciliHarfler = [...ayarlar.varsayilanSecili];
     this.harfBoyutu = 'buyuk';
@@ -24,11 +25,9 @@ class SesHarfOyunu {
     this.el = {
       ekran: document.getElementById('oyun'),
       skor: document.getElementById('skor'),
+      hedefMesaj: document.getElementById('hedefMesaj'),
       harfSol: document.getElementById('harfSol'),
       harfSag: document.getElementById('harfSag'),
-      sesSol: document.getElementById('sesSol'),
-      sesSag: document.getElementById('sesSag'),
-      sesDugmeleri: document.getElementById('sesDugmeleri'),
       menu: document.getElementById('menu'),
       kurulum: document.getElementById('kurulum'),
       harfIzgarasi: document.getElementById('harfIzgarasi'),
@@ -50,7 +49,6 @@ class SesHarfOyunu {
     this.kurulumHarfleriniOlustur();
     this.yerelAyarlariYukle();
     this.baglaOlaylar();
-    this.guncelleMod();
     this.kurulumGuncelle();
   }
 
@@ -183,25 +181,14 @@ class SesHarfOyunu {
       });
     });
 
-    this.el.btnDinle.addEventListener('click', () => {
-      if (this.dogruHarf && this.durum === 'oynuyor') this.ses.cal(this.dogruHarf);
-    });
+    this.el.btnDinle.addEventListener('click', () => this.sesiTekrarCal());
 
     const cevapTik = (taraf) => {
       if (this.durum !== 'oynuyor') return;
       const harf = taraf === 'sol' ? this.solHarf : this.sagHarf;
-      this.ses.cal(harf);
       this.cevapKontrol(harf);
     };
 
-    this.el.sesSol.addEventListener('click', (e) => {
-      e.stopPropagation();
-      cevapTik('sol');
-    });
-    this.el.sesSag.addEventListener('click', (e) => {
-      e.stopPropagation();
-      cevapTik('sag');
-    });
     this.el.harfSol.addEventListener('click', (e) => {
       e.stopPropagation();
       cevapTik('sol');
@@ -212,14 +199,36 @@ class SesHarfOyunu {
     });
   }
 
-  guncelleMod() {
-    const sesModu = this.ayarlar.sesDugmeleriModu;
-    this.el.sesDugmeleri.hidden = !sesModu;
+  hedefMesajYaz(metin) {
+    this.el.hedefMesaj.textContent = metin;
+  }
+
+  animasyonuDurdur() {
+    if (this.animasyonId) {
+      cancelAnimationFrame(this.animasyonId);
+      this.animasyonId = null;
+    }
   }
 
   harfleriTiklanabilirYap(aktif) {
     this.el.harfSol.classList.toggle('tiklanabilir', aktif);
     this.el.harfSag.classList.toggle('tiklanabilir', aktif);
+    this.el.ekran.classList.toggle('beklemede', !aktif);
+  }
+
+  async sesiTekrarCal() {
+    if (!this.dogruHarf || (this.durum !== 'oynuyor' && this.durum !== 'dinliyor')) return;
+
+    this.animasyonuDurdur();
+    this.harfleriTiklanabilirYap(false);
+    this.durum = 'dinliyor';
+    this.hedefMesajYaz('Dinle…');
+
+    await this.ses.cal(this.dogruHarf);
+
+    if (this.durum !== 'dinliyor') return;
+
+    this.akisiBaslat();
   }
 
   tumKatmanlariGizle() {
@@ -231,7 +240,9 @@ class SesHarfOyunu {
 
   menuyuAc() {
     this.durum = 'menu';
+    this.turToken += 1;
     this.ses.durdur();
+    this.animasyonuDurdur();
     document.body.classList.remove('kurulum-acik');
     this.tumKatmanlariGizle();
     this.el.menu.classList.remove('gizli');
@@ -239,7 +250,9 @@ class SesHarfOyunu {
 
   kurulumuAc() {
     this.durum = 'kurulum';
+    this.turToken += 1;
     this.ses.durdur();
+    this.animasyonuDurdur();
     this.tumKatmanlariGizle();
     this.el.kurulum.classList.remove('gizli');
     document.body.classList.add('kurulum-acik');
@@ -262,23 +275,23 @@ class SesHarfOyunu {
     this.harfBoyutunuOku();
     this.yerelAyarlariKaydet();
     this.ses.durdur();
+    this.turToken += 1;
     this.durum = 'oynuyor';
     this.skor = 0;
     this.el.skor.textContent = '0';
     document.body.classList.remove('kurulum-acik');
     this.tumKatmanlariGizle();
     this.el.ekran.classList.remove('gizli');
-    this.harfleriTiklanabilirYap(true);
     this.yeniTur();
   }
 
-  yeniTur() {
+  turHazirla() {
     this.dogruHarf = this.rastgeleHarf();
     this.yanlisHarf = this.rastgeleHarf([this.dogruHarf]);
 
     if (this.harfEsit(this.dogruHarf, this.yanlisHarf) && this.seciliHarfler.length < 2) {
       this.oyunBitti('En az 2 farklı harf seçmelisin.');
-      return;
+      return false;
     }
 
     if (Math.random() < 0.5) {
@@ -291,23 +304,41 @@ class SesHarfOyunu {
 
     this.el.harfSol.textContent = this.harfGoster(this.solHarf);
     this.el.harfSag.textContent = this.harfGoster(this.sagHarf);
-    this.el.sesSol.setAttribute('aria-label', `${this.harfGoster(this.solHarf)} sesi`);
-    this.el.sesSag.setAttribute('aria-label', `${this.harfGoster(this.sagHarf)} sesi`);
 
     const alan = this.el.ekran.getBoundingClientRect();
     const ust = 72;
-    const alt = this.ayarlar.sesDugmeleriModu ? alan.height - 200 : alan.height - 80;
-    this.harfHedefY = alt;
+    this.harfHedefY = alan.height - 80;
     this.harfKonumlari = { sol: ust, sag: ust };
 
     this.harfKonumGuncelle('sol', ust);
     this.harfKonumGuncelle('sag', ust);
 
-    this.ses.cal(this.dogruHarf);
+    return true;
+  }
 
-    if (this.animasyonId) cancelAnimationFrame(this.animasyonId);
+  akisiBaslat() {
+    this.durum = 'oynuyor';
+    this.hedefMesajYaz('Doğru harfe tıkla!');
+    this.harfleriTiklanabilirYap(true);
     this.sonZaman = performance.now();
     this.dongu();
+  }
+
+  async yeniTur() {
+    const token = ++this.turToken;
+    this.animasyonuDurdur();
+    this.harfleriTiklanabilirYap(false);
+
+    if (!this.turHazirla()) return;
+
+    this.durum = 'dinliyor';
+    this.hedefMesajYaz('Dinle…');
+
+    await this.ses.cal(this.dogruHarf);
+
+    if (token !== this.turToken || this.durum !== 'dinliyor') return;
+
+    this.akisiBaslat();
   }
 
   dongu() {
@@ -334,10 +365,7 @@ class SesHarfOyunu {
   cevapKontrol(secilen) {
     if (this.durum !== 'oynuyor') return;
 
-    if (this.animasyonId) {
-      cancelAnimationFrame(this.animasyonId);
-      this.animasyonId = null;
-    }
+    this.animasyonuDurdur();
 
     if (this.harfEsit(secilen, this.dogruHarf)) {
       this.skor += 1;
@@ -348,7 +376,7 @@ class SesHarfOyunu {
         if (this.durum === 'oynuyor') this.yeniTur();
       }, this.ayarlar.turArasiBekleme);
     } else {
-      this.oyunBitti('Yanlış seçim!');
+      this.oyunBitti('Yanlış harf!');
     }
   }
 
@@ -359,12 +387,10 @@ class SesHarfOyunu {
 
   oyunBitti(mesaj) {
     this.durum = 'bitti';
+    this.turToken += 1;
     this.harfleriTiklanabilirYap(false);
     this.ses.durdur();
-    if (this.animasyonId) {
-      cancelAnimationFrame(this.animasyonId);
-      this.animasyonId = null;
-    }
+    this.animasyonuDurdur();
     document.getElementById('gameOverMesaj').textContent = mesaj;
     this.el.finalSkor.textContent = String(this.skor);
     this.tumKatmanlariGizle();

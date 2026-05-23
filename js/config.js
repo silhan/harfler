@@ -20,10 +20,4 @@ window.OYUN_AYARLARI = {
   turArasiBekleme: 400,
 
   sesKlasoru: 'sounds/',
-
-  /**
-   * true: altta iki ses düğmesi — doğru sesi tıkla
-   * false: düşen harfe tıkla (ses sadece ipucu olarak çalar)
-   */
-  sesDugmeleriModu: true,
 };
