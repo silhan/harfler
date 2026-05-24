@@ -5,6 +5,7 @@ class SesHarfOyunu {
   constructor(ayarlar) {
     this.ayarlar = ayarlar;
     this.ses = new SesYoneticisi(ayarlar);
+    this.efekt = new EfektYoneticisi(document.getElementById('efektKatmani'));
     this.durum = 'menu';
     this.skor = 0;
     this.animasyonId = null;
@@ -186,7 +187,8 @@ class SesHarfOyunu {
     const cevapTik = (taraf) => {
       if (this.durum !== 'oynuyor') return;
       const harf = taraf === 'sol' ? this.solHarf : this.sagHarf;
-      this.cevapKontrol(harf);
+      const harfEl = taraf === 'sol' ? this.el.harfSol : this.el.harfSag;
+      this.cevapKontrol(harf, harfEl);
     };
 
     this.el.harfSol.addEventListener('click', (e) => {
@@ -362,26 +364,35 @@ class SesHarfOyunu {
     this.animasyonId = requestAnimationFrame(() => this.dongu());
   }
 
-  cevapKontrol(secilen) {
+  cevapKontrol(secilen, harfEl) {
     if (this.durum !== 'oynuyor') return;
 
     this.animasyonuDurdur();
 
     if (this.harfEsit(secilen, this.dogruHarf)) {
+      this.efekt.olumluSes();
+      this.efekt.olumluGorsel(harfEl, this.el.ekran);
       this.skor += 1;
       this.el.skor.textContent = String(this.skor);
-      this.el.ekran.classList.add('dogru-flash');
+      this.hedefMesajYaz('Harika! 🎉');
+      const bekleme = Math.max(this.ayarlar.turArasiBekleme, 550);
       setTimeout(() => {
         this.el.ekran.classList.remove('dogru-flash');
+        if (harfEl) harfEl.classList.remove('olumlu-patla');
         if (this.durum === 'oynuyor') this.yeniTur();
-      }, this.ayarlar.turArasiBekleme);
+      }, bekleme);
     } else {
-      this.oyunBitti('Yanlış harf!');
+      this.efekt.olumsuzSes();
+      this.efekt.olumsuzGorsel(harfEl, this.el.ekran);
+      setTimeout(() => {
+        this.oyunBitti('Yanlış harf!');
+      }, 450);
     }
   }
 
   harfKonumGuncelle(taraf, y) {
     const el = taraf === 'sol' ? this.el.harfSol : this.el.harfSag;
+    el.style.setProperty('--y', `${y}px`);
     el.style.transform = `translateX(-50%) translateY(${y}px)`;
   }
 
@@ -391,6 +402,7 @@ class SesHarfOyunu {
     this.harfleriTiklanabilirYap(false);
     this.ses.durdur();
     this.animasyonuDurdur();
+    this.el.ekran.classList.remove('dogru-flash', 'yanlis-flash', 'yanlis-sars');
     document.getElementById('gameOverMesaj').textContent = mesaj;
     this.el.finalSkor.textContent = String(this.skor);
     this.tumKatmanlariGizle();
